@@ -1,3 +1,5 @@
+const { getDb } = require("../utils/dbConnect");
+
 let tools = [
     {
         "id": 1,
@@ -17,13 +19,15 @@ module.exports.allTools = (req,res) => {
     res.send(tools)
 }
 
-module.exports.saveTool = (req,res) => {
-    const newTool = req.body;
-    if (req.file) {
-        Object.assign(newTool, { document: '/uploads/document/' + req.file.filename });
+module.exports.saveTool = async (req, res, next) => {
+    try {
+        const db = getDb();
+        const newTool = req.body;
+        const result = await db.collection('toolsInfo').insertOne(newTool);
+        res.send(result);
+    } catch (error) {
+        next(error);
     }
-    tools.push(newTool);
-    res.send(tools);
 }
 
 module.exports.toolDetails = (req,res) =>{

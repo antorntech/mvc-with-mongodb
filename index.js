@@ -16,13 +16,13 @@ global.upload = multer({
     }
   })
 });
-const dbConnect = require("./utils/dbConnect");
 const app = express();
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 const toolsRoutes = require("./routes/v1/tools.route");
 const viewCount = require("./middleware/viewCount");
 const errorHandler = require("./middleware/errorHandler");
+const { connectToServer } = require("./utils/dbConnect");
 const port = process.env.PORT || 5000;
 
 app.use(cors());
@@ -32,7 +32,15 @@ app.use(express.json());
 app.use(viewCount)
 
 // this id database connection function 
-dbConnect();
+connectToServer((err)=>{
+  if(!err){
+      app.listen(port, () => {
+      console.log(`Application is running on port ${port}`)
+    })
+  } else{
+    console.log(err);
+  }
+});
 
 // all route will be here
 app.use('/api/v1/tools', toolsRoutes);
@@ -46,10 +54,6 @@ app.all('*', (req,res)=>{
 })
 
 app.use(errorHandler);
-
-app.listen(port, () => {
-  console.log(`Application is running on port ${port}`)
-})
 
 process.on("unHandleRejection", (error) => {
   console.log(error.name, error.message);
