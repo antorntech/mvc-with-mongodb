@@ -3,8 +3,11 @@ const { getDb } = require("../utils/dbConnect");
 module.exports.allTools = async (req,res, next) => {
     try {
         const db = getDb();
-        const result = await db.collection('toolsInfo').find();
-        res.send(result);
+        const result = await db.collection('toolsInfo').find().toArray();
+        if(!result){
+            return res.status(400).res.send({status: false, error: "Something went wrong"});
+        }
+        res.send({status: true, message: result})
     } catch (error) {
         next(error);
     }
@@ -15,7 +18,11 @@ module.exports.saveTool = async (req, res, next) => {
         const db = getDb();
         const newTool = req.body;
         const result = await db.collection('toolsInfo').insertOne(newTool);
-        res.send(result);
+
+        if(!result.insertedId){
+            return res.status(400).send({status: false, error: "Something went wrong"})
+        }
+        res.send({status: true, message: "Tools Added Successfully"});
     } catch (error) {
         next(error);
     }
