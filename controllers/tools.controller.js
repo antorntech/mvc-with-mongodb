@@ -1,22 +1,13 @@
 const { getDb } = require("../utils/dbConnect");
 
-let tools = [
-    {
-        "id": 1,
-        "name": "Hammer"
-    },
-    {
-        "id": 2,
-        "name": "Iron"
-    },
-    {
-        "id": 3,
-        "name": "Belt"
+module.exports.allTools = async (req,res, next) => {
+    try {
+        const db = getDb();
+        const result = await db.collection('toolsInfo').find();
+        res.send(result);
+    } catch (error) {
+        next(error);
     }
-]
-
-module.exports.allTools = (req,res) => {
-    res.send(tools)
 }
 
 module.exports.saveTool = async (req, res, next) => {
