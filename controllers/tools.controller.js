@@ -22,9 +22,17 @@ module.exports.saveTool = async (req, res, next) => {
     try {
         const db = getDb();
         const newTool = req.body;
+        let files = [];
+        let images = {};
 
-        if (req.file) {
-            Object.assign(newTool, { file: '/uploads/files/' + req.file.filename });
+        req.files.map((file, index)=>{
+            Object.assign(images,{[`file${index+1}`]: '/uploads/document/' + file.filename});       
+        })
+
+        files.push(images)
+
+        if (files) {
+            Object.assign(newTool, { file:  files});
         }
 
         const result = await db.collection('toolsInfo').insertOne(newTool);
