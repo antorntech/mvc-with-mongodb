@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const { getDb } = require("../utils/dbConnect");
 
 module.exports.allTools = async (req,res, next) => {
@@ -7,7 +8,11 @@ module.exports.allTools = async (req,res, next) => {
         if(!result){
             return res.status(400).res.send({status: false, error: "Something went wrong"});
         }
-        res.send({status: true, message: result})
+        res.status(200).json({
+            status: 'success',
+            message: 'Data find successfully!',
+            data: result
+        })
     } catch (error) {
         next(error);
     }
@@ -17,21 +22,43 @@ module.exports.saveTool = async (req, res, next) => {
     try {
         const db = getDb();
         const newTool = req.body;
+
+        if (req.file) {
+            Object.assign(newTool, { file: '/uploads/files/' + req.file.filename });
+        }
+
         const result = await db.collection('toolsInfo').insertOne(newTool);
 
         if(!result.insertedId){
             return res.status(400).send({status: false, error: "Something went wrong"})
         }
-        res.send({status: true, message: "Tools Added Successfully"});
+        res.status(200).json({
+            status: 'success',
+            message: 'Data inserted successfully!',
+            data: result
+        })
     } catch (error) {
         next(error);
     }
 }
 
-module.exports.toolDetails = (req,res) =>{
-    const {id} = req.params;
-    const singleTool = tools.find(tool=> tool.id === Number(id))
-    res.send(singleTool);
+module.exports.toolDetails = async (req, res, next) =>{
+    try {
+        const db = getDb();
+        const {id} = req.params;
+        const result = await db.collection("toolsInfo").findOne({_id: ObjectId(id)})
+        res.status(200).json({
+            status: 'success',
+            message: 'Data find successfully!',
+            data: result
+        })
+    } catch (error) {
+        res.status(400).json({
+            status: 'fail',
+            message: 'Data not find',
+            error: error
+        })
+    }
 }
 
 module.exports.toolUpdate = (req, res) =>{
@@ -42,8 +69,21 @@ module.exports.toolUpdate = (req, res) =>{
     res.send(newTool);
 }
 
-module.exports.toolDelete = (req,res) =>{
-    const {id} = req.params;
-    tools = tools.filter(tool => tool.id !== Number(id));
-    res.send("Delete Successful");
+module.exports.toolDelete = async (req, res, next) =>{
+    try {
+        const db = getDb();
+        const {id} = req.params;
+        const result = await db.collection('toolsInfo').deleteOne({_id: ObjectId(id)})
+        res.status(200).json({
+            status: 'success',
+            message: 'Data delete successfully!',
+            data: result
+        })
+    } catch (error) {
+        res.status(400).json({
+            status: 'fail',
+            message: 'Data not delete',
+            error: error
+        })
+    }
 }
